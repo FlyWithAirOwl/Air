@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flugsuche – Prototyp</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin:0; background:#f4f6f8; }
+    header { background:#003366; color:#fff; padding:1rem; text-align:center; }
+    main { max-width:1200px; margin:auto; padding:1rem; }
+    section { background:#fff; border-radius:12px; padding:1rem; margin-bottom:1rem; }
+
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.75rem; }
+    input, select, button { padding:0.6rem; font-size:1rem; }
+    button { background:#003366; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+
+    .map { height:260px; border-radius:12px; background:linear-gradient(135deg,#cfd9df,#e2ebf0); display:flex; align-items:center; justify-content:center; font-weight:600; }
+
+    .flight { display:flex; justify-content:space-between; gap:1rem; border-bottom:1px solid #e0e0e0; padding:0.75rem 0; }
+    .flight:last-child { border:none; }
+    .price { font-weight:700; white-space:nowrap; }
+    .affiliate { font-size:0.85rem; color:#0055aa; text-decoration:underline; }
+
+    @media (max-width:600px) {
+      .flight { flex-direction:column; }
+      .price { align-self:flex-end; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Flüge entdecken</h1>
+  <p>Egal wohin oder gezielt suchen</p>
+</header>
+
+<main>
+  <section>
+    <div class="grid">
+      <input id="from" placeholder="Abflugort" />
+      <input id="to" placeholder="Ziel (oder egal)" />
+      <input type="date" id="date" />
+      <select id="travelers">
+        <option value="1">1 Reisender</option>
+        <option value="2">2 Reisende</option>
+        <option value="3">3 Reisende</option>
+      </select>
+      <button onclick="search()">Suchen</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid">
+      <select id="baggage">
+        <option value="any">Gepäck egal</option>
+        <option value="hand">Handgepäck</option>
+        <option value="checked">Aufgabegepäck</option>
+      </select>
+      <select id="continent">
+        <option value="any">Alle Kontinente</option>
+        <option value="Europa">Europa</option>
+        <option value="Asien">Asien</option>
+        <option value="Amerika">Amerika</option>
+      </select>
+      <select id="temperature">
+        <option value="any">Temperatur egal</option>
+        <option value="20">> 20 °C</option>
+        <option value="30">> 30 °C</option>
+      </select>
+      <select id="stops">
+        <option value="any">Umstiege egal</option>
+        <option value="0">Direktflug</option>
+        <option value="1">Max. 1 Umstieg</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="map">
+    Map-Based Discovery (Prototyp)
+  </section>
+
+  <section id="results"></section>
+</main>
+
+<script>
+const flights = [
+  { airline:'Lufthansa', from:'Berlin', to:'Lissabon', continent:'Europa', temp:25, stops:0, baggage:'checked', price:189, season:'Mai–September' },
+  { airline:'Ryanair', from:'Berlin', to:'Rom', continent:'Europa', temp:28, stops:0, baggage:'hand', price:79, season:'April–Oktober' },
+  { airline:'Emirates', from:'Berlin', to:'Dubai', continent:'Asien', temp:35, stops:1, baggage:'checked', price:420, season:'November–März' },
+  { airline:'LATAM', from:'Berlin', to:'São Paulo', continent:'Amerika', temp:26, stops:1, baggage:'checked', price:690, season:'Mai–September' }
+];
+
+function search() {
+  const to = document.getElementById('to').value.toLowerCase();
+  const baggage = document.getElementById('baggage').value;
+  const continent = document.getElementById('continent').value;
+  const temperature = document.getElementById('temperature').value;
+  const stops = document.getElementById('stops').value;
+
+  let results = flights.filter(f =>
+    (to === '' || to === 'egal' || f.to.toLowerCase().includes(to)) &&
+    (baggage === 'any' || f.baggage === baggage) &&
+    (continent === 'any' || f.continent === continent) &&
+    (temperature === 'any' || f.temp >= temperature) &&
+    (stops === 'any' || f.stops <= stops)
+  );
+
+  render(results);
+}
+
+function render(list) {
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+
+  if (list.length === 0) {
+    container.innerHTML = '<p>Keine passenden Flüge gefunden.</p>';
+    return;
+  }
+
+  list.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'flight';
+    div.innerHTML = `
+      <div>
+        <strong>${f.airline}</strong><br>
+        ${f.from} → ${f.to}<br>
+        Beste Reisezeit: ${f.season}
+      </div>
+      <div class="price">
+        ${f.price} €<br>
+        <a class="affiliate" href="#">Zum Anbieter</a>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
